@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎧 1991 — For Her 🤍</title>
+<link rel="icon" href="favicon.png">
+<link rel="preload" as="image" href="herfavsongimage.jpg">
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap');
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Poppins', sans-serif;
+  background: black;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ✅ Background Image Fully Visible */
+.bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: url('herfavsongimage.jpg') center center no-repeat;
+  background-size: contain;
+  z-index: -2;
+}
+
+/* ✅ Soft blur fill behind image */
+.bg-blur {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: url('herfavsongimage.jpg') center center no-repeat;
+  background-size: cover;
+  filter: blur(30px) brightness(0.6);
+  z-index: -3;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.35);
+  backdrop-filter: blur(3px);
+  z-index: 0;
+  transition: 0.5s;
+}
+
+body.night .overlay {
+  background: rgba(0,0,20,0.6);
+}
+
+h1 {
+  margin-top: 70px;
+  font-size: 3rem;
+  text-align: center;
+  text-shadow: 0 0 15px pink;
+  animation: fadeIn 1.5s ease forwards;
+  opacity: 0;
+}
+
+.subtitle {
+  font-size: 1.2rem;
+  opacity: 0.85;
+  animation: fadeIn 2s forwards;
+}
+
+.playlist {
+  width: 90%;
+  max-width: 480px;
+  margin-top: 30px;
+  animation: fadeIn 2.5s forwards;
+}
+
+.song {
+  padding: 15px;
+  border-radius: 15px;
+  background: rgba(255,255,255,0.15);
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  backdrop-filter: blur(6px);
+  transition: 0.25s;
+}
+
+.song:hover {
+  background: rgba(255,255,255,0.25);
+  transform: scale(1.03);
+}
+
+.song-title {
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.song-artist {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.play-btn {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 20px;
+  background: #fff;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.2s;
+}
+
+.play-btn:hover {
+  background: #ddd;
+}
+
+audio {
+  width: 100%;
+  margin-top: 10px;
+}
+
+/* Night Mode Button */
+#nightToggle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 10px 15px;
+  background: rgba(255,255,255,0.2);
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  color: white;
+  font-weight: bold;
+}
+
+@keyframes fadeIn {
+  0% {opacity: 0; transform: translateY(20px);}
+  100% {opacity: 1; transform: translateY(0);}
+}
+
+@media (max-width: 600px) {
+  h1 { font-size: 2.2rem; }
+  .song-title { font-size: 1rem; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="bg-blur"></div>
+<div class="bg"></div>
+<div class="overlay"></div>
+
+<button id="nightToggle" onclick="toggleNightMode()">🌙 Night Mode</button>
+
+<h1>🎧 1991</h1>
+<p class="subtitle">"for her"</p>
+
+<div class="playlist">
+  <div class="song">
+    <div>
+      <div class="song-title">Take Me Back To 1991</div>
+      <div class="song-artist">For You 🤍</div>
+    </div>
+    <button class="play-btn" onclick="togglePlay(this, 'herfavsong.mp3')">▶ Play</button>
+  </div>
+  <audio id="player" controls></audio>
+</div>
+
+<script>
+const player = document.getElementById("player");
+let currentSrc = null;
+
+function togglePlay(btn, src) {
+  if (player.src.includes(src) && !player.paused) {
+    player.pause();
+    btn.textContent = "▶ Play";
+  } else {
+    if (!player.src.includes(src)) {
+      player.src = src;
+    }
+    player.play();
+    btn.textContent = "⏸ Pause";
+    currentSrc = src;
+  }
+}
+
+player.addEventListener("ended", () => {
+  document.querySelectorAll(".play-btn").forEach(btn => btn.textContent = "▶ Play");
+});
+
+// Night Mode
+function toggleNightMode() {
+  document.body.classList.toggle("night");
+}
+</script>
+
+</body>
+</html>

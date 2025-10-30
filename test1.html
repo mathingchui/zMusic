@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎧 Kingston</title>
+<link rel="icon" href="favicon.png">
+<meta name="theme-color" content="#ff69b4">
+<link rel="preload" as="image" href="herfavsongimage.jpg">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap');
+
+:root {
+  --main-pink: #ff69b4;
+  --light-pink: #ffb6c1;
+  --text-glow: 0 0 10px rgba(255, 192, 203, 0.8), 0 0 20px rgba(255, 192, 203, 0.7);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Poppins', sans-serif;
+  background: url('herfavsongimage.jpg') center center fixed;
+  background-size: cover;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+  transition: background 1s ease;
+}
+
+body.night {
+  filter: brightness(0.7);
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 1;
+  transition: background 0.5s ease;
+}
+
+body.night .overlay {
+  background: rgba(0, 0, 20, 0.6);
+}
+
+h1 {
+  margin-top: 60px;
+  font-size: 2.8rem;
+  text-shadow: var(--text-glow);
+  z-index: 2;
+  text-align: center;
+  animation: fadeIn 1.5s ease-in forwards;
+  opacity: 0;
+}
+
+.subtitle {
+  font-size: 1.1rem;
+  font-weight: 300;
+  margin-top: 10px;
+  text-align: center;
+  opacity: 0.9;
+  z-index: 2;
+  animation: fadeIn 2s ease-in forwards;
+}
+
+.playlist {
+  width: 90%;
+  max-width: 500px;
+  margin-top: 40px;
+  z-index: 2;
+  animation: fadeIn 2.5s ease-in forwards;
+}
+
+.song {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 15px;
+  padding: 15px;
+  margin-bottom: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: 0.3s;
+}
+
+.song:hover {
+  background: rgba(255, 255, 255, 0.35);
+  transform: scale(1.02);
+}
+
+.song-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.song-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.song-artist {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.play-btn {
+  background: #fff;
+  color: #333;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.3s;
+  animation: glow 2s infinite alternate;
+  z-index: 2;
+}
+
+.play-btn:hover {
+  background: #ddd;
+}
+
+audio {
+  width: 100%;
+  margin-top: 10px;
+  outline: none;
+  border-radius: 10px;
+  z-index: 2;
+}
+
+#nightToggle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10;
+  background: rgba(255,255,255,0.2);
+  border: none;
+  padding: 10px 15px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 0 0 5px #fff, 0 0 10px #fff;
+  animation: lightGlow 2s infinite alternate;
+  transition: background 0.3s, color 0.3s;
+}
+
+canvas#particles {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  pointer-events: none;
+  width: 100%;
+  height: 100%;
+}
+
+footer {
+  margin-top: auto;
+  padding: 15px;
+  font-size: 0.8rem;
+  opacity: 0.8;
+  z-index: 2;
+}
+
+.fade-seq {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.8s ease forwards;
+}
+.fade-seq:nth-child(1) { animation-delay: 0.5s; }
+.fade-seq:nth-child(2) { animation-delay: 1s; }
+.fade-seq:nth-child(3) { animation-delay: 1.5s; }
+
+@keyframes fadeInUp {
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  0% {opacity: 0; transform: translateY(20px);}
+  100% {opacity: 1; transform: translateY(0);}
+}
+@keyframes glow {
+  0% { box-shadow: 0 0 5px var(--light-pink); }
+  100% { box-shadow: 0 0 20px var(--main-pink); }
+}
+@keyframes lightGlow {
+  0% { text-shadow: 0 0 3px #fff, 0 0 8px #fff; }
+  100% { text-shadow: 0 0 10px #fff, 0 0 20px #fff; }
+}
+
+@media (max-width: 600px) {
+  h1 { font-size: 2rem; margin-top: 40px; }
+  .song-title { font-size: 1rem; }
+  .playlist { margin-top: 20px; }
+}
+</style>
+</head>
+<body>
+<canvas id="particles"></canvas>
+<div class="overlay" id="overlay"></div>
+
+<button id="nightToggle" onclick="toggleNightMode()">🌙 Night Mode</button>
+
+<h1 class="fade-seq">🎧 Kingston💞</h1>
+<p class="subtitle fade-seq">“for her”</p>
+
+<div class="playlist fade-seq">
+  <div class="song">
+    <div class="song-info">
+      <div class="song-title">The day that I met you, I started dreaming</div>
+      <div class="song-artist">For You 🤍</div>
+    </div>
+    <button class="play-btn" onclick="togglePlay(this, 'herfavsong.mp3')">▶ Play</button>
+  </div>
+
+  <!-- 🎵 More Songs -->
+  <div class="song">
+    <div class="song-info">
+      <div class="song-title">Soft Rain</div>
+      <div class="song-artist">Lofi Chill 🌧</div>
+    </div>
+    <button class="play-btn" onclick="togglePlay(this, 'soft_rain.mp3')">▶ Play</button>
+  </div>
+
+  <div class="song">
+    <div class="song-info">
+      <div class="song-title">Moonlit Dance</div>
+      <div class="song-artist">Instrumental ✨</div>
+    </div>
+    <button class="play-btn" onclick="togglePlay(this, 'moonlit_dance.mp3')">▶ Play</button>
+  </div>
+
+  <audio id="player" controls></audio>
+</div>
+
+<footer>✨ Made with love — Kingston 💞</footer>
+
+<script>
+const player = document.getElementById('player');
+const canvas = document.getElementById('particles');
+const ctx = canvas.getContext('2d');
+
+let audioCtx, analyser, source, dataArray, currentSrc = null;
+let nightMode = false;
+
+// Canvas resize
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+// Particles
+const particleCount = window.innerWidth < 600 ? 60 : 120;
+const particles = Array.from({length: particleCount}, () => ({
+  x: Math.random()*canvas.width,
+  y: Math.random()*canvas.height,
+  r: Math.random()*2+1,
+  dx: (Math.random()-0.5)*0.5,
+  dy: (Math.random()-0.5)*0.5
+}));
+
+function animateParticles(factor=1){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  particles.forEach(p=>{
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,p.r*factor,0,Math.PI*2);
+    ctx.fillStyle='rgba(255,192,203,0.6)';
+    ctx.fill();
+    p.x+=p.dx;
+    p.y+=p.dy;
+    if(p.x<0||p.x>canvas.width)p.dx*=-1;
+    if(p.y<0||p.y>canvas.height)p.dy*=-1;
+  });
+
+  if (analyser) {
+    const barWidth = canvas.width / dataArray.length;
+    for(let i=0; i<dataArray.length; i++){
+      const h = dataArray[i]/2;
+      ctx.fillStyle = 'rgba(255,182,193,0.4)';
+      ctx.fillRect(i*barWidth, canvas.height - h, barWidth - 1, h);
+    }
+  }
+  requestAnimationFrame(()=>animateParticles(window.audioFactor||1));
+}
+animateParticles();
+
+// Audio Visualizer
+function setupAudio() {
+  if(!audioCtx){
+    audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    analyser = audioCtx.createAnalyser();
+    source = audioCtx.createMediaElementSource(player);
+    source.connect(analyser);
+    analyser.connect(audioCtx.destination);
+    analyser.fftSize = 128;
+    dataArray = new Uint8Array(analyser.frequencyBinCount);
+  }
+  if(audioCtx.state==='suspended') audioCtx.resume();
+  drawVisualizer();
+}
+
+function drawVisualizer(){
+  requestAnimationFrame(drawVisualizer);
+  if(analyser){
+    analyser.getByteFrequencyData(dataArray);
+    let avg = dataArray.reduce((a,b)=>a+b,0)/dataArray.length;
+    window.audioFactor = 1 + avg/150;
+  }
+}
+
+// Toggle Play
+function togglePlay(btn, src) {
+  const allBtns = document.querySelectorAll('.play-btn');
+  allBtns.forEach(b => b.textContent = '▶ Play');
+
+  if (player.src.includes(src) && !player.paused) {
+    player.pause();
+    btn.textContent = '▶ Play';
+    return;
+  }
+
+  if (!player.src.includes(src)) player.src = src;
+
+  player.play().then(() => {
+    setupAudio();
+    btn.textContent = '⏸ Pause';
+    currentSrc = src;
+  }).catch(e=>console.log("Play error:", e));
+
+  player.volume = 0;
+  const fadeIn = setInterval(()=>{
+    if(player.volume<1) player.volume = Math.min(1, player.volume+0.05);
+    else clearInterval(fadeIn);
+  },200);
+}
+
+player.addEventListener('ended', () => {
+  document.querySelectorAll('.play-btn').forEach(b => b.textContent = '▶ Play');
+});
+
+// Night mode toggle
+function toggleNightMode(){
+  nightMode = !nightMode;
+  document.body.classList.toggle('night', nightMode);
+}
+
+// Fix autoplay restrictions
+document.body.addEventListener('click', () => {
+  if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+}, { once: true });
+</script>
+</body>
+</html>

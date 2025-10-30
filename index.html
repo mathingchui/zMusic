@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>🎧 1991 — For Her (Ultra Dark Premium)</title>
+
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg-black: #030305;
+    --card-bg: rgba(255,255,255,0.04);
+    --card-border: rgba(255,255,255,0.06);
+    --glass-blur: 8px;
+    --accent: #ffffff;
+    --muted: rgba(255,255,255,0.6);
+    --vinyl-size: 110px;
+  }
+
+  /* Reset */
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    background: var(--bg-black);
+    color: var(--accent);
+    overflow:hidden;
+  }
+
+  /* full-fit background (no cropping) & centered */
+  .bg-wrap{
+    position:fixed; inset:0; z-index:-4;
+    display:flex; align-items:center; justify-content:center;
+    pointer-events:none;
+  }
+  .bg-image {
+    max-width:100vw;
+    max-height:100vh;
+    width: auto;
+    height: auto;
+    object-fit:contain;
+    display:block;
+    filter: grayscale(100%) contrast(1.05) brightness(0.9);
+    transform-origin:center;
+  }
+
+  /* blurred fill that covers whole screen (fills empty area behind contained image) */
+  .bg-fill {
+    position:fixed; inset:0; z-index:-6;
+    background-position:center;
+    background-size:cover;
+    filter: blur(34px) brightness(0.5) grayscale(100%);
+    transform: scale(1.02);
+  }
+
+  /* subtle vignette to make edges darker */
+  .vignette {
+    position:fixed; inset:0; z-index:-5; pointer-events:none;
+    background: radial-gradient(ellipse at center, rgba(0,0,0,0) 40%, rgba(0,0,0,0.6) 100%);
+  }
+
+  /* Overlay */
+  .overlay {
+    position:fixed; inset:0; z-index:-3;
+    background: linear-gradient(0deg, rgba(0,0,0,0.45), rgba(0,0,0,0.15));
+    pointer-events:none;
+  }
+
+  /* Page container */
+  .page {
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-start;
+    gap:18px;
+    min-height:100vh;
+    padding:48px 20px;
+  }
+
+  /* Header */
+  header{
+    margin-top:22px;
+    text-align:center;
+    z-index:2;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    align-items:center;
+  }
+  h1{
+    font-family: "Playfair Display", serif;
+    font-weight:700;
+    letter-spacing:0.6px;
+    font-size:42px;
+    color:var(--accent);
+    text-shadow: 0 6px 28px rgba(0,0,0,0.7);
+  }
+  .subtitle{
+    font-size:14px;
+    color:var(--muted);
+    font-weight:300;
+    letter-spacing:0.4px;
+  }
+
+  /* Player area */
+  .player-shell{
+    width:100%;
+    max-width:900px;
+    display:grid;
+    grid-template-columns: auto 1fr;
+    gap:18px;
+    align-items:center;
+    margin-top:18px;
+    z-index:2;
+  }
+
+  /* Glass card - album/visual section */
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius:16px;
+    padding:18px;
+    backdrop-filter: blur(var(--glass-blur));
+    box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+  }
+
+  .album {
+    width: var(--vinyl-size);
+    height: var(--vinyl-size);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:12px;
+    overflow:visible;
+    position:relative;
+    margin:auto;
+  }
+
+  /* vinyl disc */
+  .vinyl {
+    width: calc(var(--vinyl-size) * 0.92);
+    height: calc(var(--vinyl-size) * 0.92);
+    border-radius:50%;
+    background: radial-gradient(circle at 35% 30%, #111 0%, #000 45%, #0a0a0a 100%);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.03), 0 8px 30px rgba(0,0,0,0.6);
+    transition: transform 0.8s linear;
+  }
+
+  .vinyl.playing { animation: spin 4s linear infinite; }
+
+  .vinyl .label {
+    width: 42%;
+    height: 42%;
+    border-radius:50%;
+    background: rgba(255,255,255,0.06);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:10px;
+    color:var(--muted);
+    text-align:center;
+    padding:6px;
+    transform: translateZ(0);
+  }
+
+  @keyframes spin { from{transform:rotate(0)} to{transform:rotate(360deg)} }
+
+  /* Control panel */
+  .controls {
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .meta {
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+  .track-title {
+    font-family:"Playfair Display", serif;
+    font-weight:600;
+    font-size:20px;
+    color:var(--accent);
+  }
+  .track-sub {
+    color:var(--muted);
+    font-size:13px;
+  }
+
+  /* play/pause button (elegant) */
+  .btn {
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    background:transparent;
+    border:1px solid rgba(255,255,255,0.08);
+    color:var(--accent);
+    padding:10px 14px;
+    border-radius:12px;
+    cursor:pointer;
+    transition: transform .15s ease, background .18s ease;
+    font-weight:600;
+  }
+  .btn:active { transform: scale(.98) }
+  .btn:hover { background: rgba(255,255,255,0.02) }
+
+  /* audio progress / small controls */
+  .progress {
+    width:100%;
+    height:6px;
+    background: rgba(255,255,255,0.04);
+    border-radius:6px;
+    overflow:hidden;
+    margin-top:6px;
+  }
+  .progress > i {
+    display:block;
+    height:100%;
+    width:0%;
+    background: linear-gradient(90deg, rgba(255,255,255,0.95), rgba(255,255,255,0.6));
+  }
+
+  /* Visualizer canvas */
+  .visualizer {
+    margin-top:12px;
+    width:100%;
+    height:80px;
+    border-radius:10px;
+    overflow:hidden;
+  }
+
+  /* Playlist */
+  .playlist {
+    margin-top:18px;
+    width:100%;
+    max-width:900px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    z-index:2;
+  }
+  .song-row {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:12px;
+    border-radius:12px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.03);
+    transition: transform .18s ease, background .18s ease;
+  }
+  .song-row:hover{ transform: translateY(-4px); background: rgba(255,255,255,0.032) }
+
+  .song-info { display:flex; gap:12px; align-items:center; }
+  .song-meta { display:flex; flex-direction:column; }
+  .song-title { font-weight:600; color:var(--accent) }
+  .song-artist { font-size:13px; color:var(--muted) }
+
+  /* Night toggle (pure blackout) */
+  #nightToggle {
+    position:fixed;
+    top:18px;
+    right:18px;
+    z-index:9;
+    background:transparent;
+    border:1px solid rgba(255,255,255,0.07);
+    padding:10px 12px;
+    border-radius:10px;
+    color:var(--accent);
+    cursor:pointer;
+    font-weight:600;
+  }
+  #nightToggle:hover { background: rgba(255,255,255,0.02) }
+
+  /* Particles canvas (subtle lights) */
+  canvas#particles {
+    position:fixed; inset:0; z-index:-2; pointer-events:none;
+  }
+
+  /* Night mode: hide image & fill with deep black */
+  body.night .bg-image{ opacity:0; transform: scale(0.98); transition: opacity .5s, transform .5s }
+  body.night .bg-fill { filter: blur(2px) brightness(0.06) grayscale(100%) }
+  body.night .overlay { background: rgba(0,0,0,0.9) }
+
+  /* Responsive */
+  @media (max-width:880px){
+    .player-shell{ grid-template-columns: 1fr; gap:14px; padding:0 8px }
+    .album { margin:0 auto; }
+  }
+  @media (max-width:420px){
+    h1{ font-size:28px }
+    .subtitle{ font-size:12px }
+  }
+</style>
+</head>
+<body>
+
+<!-- BACKGROUND -->
+<div class="bg-wrap" aria-hidden="true">
+  <!-- blurred fill uses same image as bg; set style background-image to your file path -->
+  <div class="bg-fill" id="bgFill" style="background-image: url('herfavsongimage.jpg')"></div>
+  <img class="bg-image" id="bgImage" src="herfavsongimage.jpg" alt="" />
+  <div class="vignette"></div>
+</div>
+
+<!-- subtle particles -->
+<canvas id="particles"></canvas>
+
+<!-- dark overlay -->
+<div class="overlay"></div>
+
+<!-- Night toggle -->
+<button id="nightToggle" title="Night Mode (pure black)" onclick="toggleNight()">🌓</button>
+
+<!-- PAGE -->
+<div class="page">
+  <header>
+    <h1>1991</h1>
+    <div class="subtitle">for her — cinematic edition</div>
+  </header>
+
+  <main style="width:100%;display:flex;flex-direction:column;align-items:center;">
+    <div class="player-shell" style="width:100%;max-width:900px;">
+      <!-- Left: album/vinyl -->
+      <div class="card album" style="display:flex;align-items:center;justify-content:center;">
+        <div class="vinyl" id="vinyl">
+          <div class="label">for her</div>
+        </div>
+      </div>
+
+      <!-- Right: controls & visualizer -->
+      <div class="card controls" style="min-width:0;">
+        <div class="meta">
+          <div class="track-title">Take Me Back To 1991</div>
+          <div class="track-sub">For You • 3:24</div>
+        </div>
+
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+          <button class="btn" id="playBtn" onclick="togglePlay()">
+            ▶ Play
+          </button>
+
+          <div style="flex:1;min-width:160px">
+            <div class="progress" id="progress"><i></i></div>
+          </div>
+
+          <div style="width:48px;text-align:right;color:var(--muted);font-size:13px" id="timeDisplay">0:00</div>
+        </div>
+
+        <!-- Visualizer -->
+        <div class="visualizer card" style="padding:8px;margin-top:12px;">
+          <canvas id="vizCanvas" width="800" height="80" style="width:100%;height:80px;display:block"></canvas>
+        </div>
+
+        <!-- Hidden native audio element -->
+        <audio id="player" src="herfavsong.mp3" preload="metadata"></audio>
+      </div>
+    </div>
+
+    <!-- Playlist -->
+    <div class="playlist">
+      <div class="song-row card">
+        <div class="song-info">
+          <div style="width:44px;height:44px;border-radius:8px;background:rgba(255,255,255,0.02);display:flex;align-items:center;justify-content:center">♪</div>
+          <div class="song-meta">
+            <div class="song-title">Take Me Back To 1991</div>
+            <div class="song-artist">For You</div>
+          </div>
+        </div>
+        <div>
+          <button class="btn" onclick="playTrack('herfavsong.mp3', this)">Play</button>
+        </div>
+      </div>
+      <!-- add more rows if you want -->
+    </div>
+
+  </main>
+</div>
+
+<script>
+/* ============================
+   Core player, visualizer, vinyl, progress
+   ============================ */
+const player = document.getElementById('player');
+const playBtn = document.getElementById('playBtn');
+const vinyl = document.getElementById('vinyl');
+const progressBar = document.querySelector('#progress > i');
+const timeDisplay = document.getElementById('timeDisplay');
+
+let audioCtx, analyser, sourceNode, dataArray, rafId;
+let isPlaying = false;
+
+// WebAudio setup (on-demand to satisfy autoplay restrictions)
+function ensureAudio() {
+  if (audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  analyser = audioCtx.createAnalyser();
+  analyser.fftSize = 256;
+  dataArray = new Uint8Array(analyser.frequencyBinCount);
+  sourceNode = audioCtx.createMediaElementSource(player);
+  sourceNode.connect(analyser);
+  analyser.connect(audioCtx.destination);
+  // start visual loop
+  visualize();
+}
+
+// play/pause toggle
+function togglePlay() {
+  if (!audioCtx) ensureAudio();
+  if (player.paused) {
+    player.play().catch(e=>console.warn(e));
+  } else {
+    player.pause();
+  }
+}
+
+// play a specific track (from playlist)
+function playTrack(src, btn) {
+  if (player.src.includes(src) && !player.paused) {
+    player.pause();
+  } else {
+    if (!player.src.includes(src)) player.src = src;
+    ensureAudio();
+    player.play();
+  }
+}
+
+// sync UI with player events
+player.addEventListener('play', () => {
+  isPlaying = true;
+  playBtn.textContent = '⏸ Pause';
+  vinyl.classList.add('playing');
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+});
+player.addEventListener('pause', () => {
+  isPlaying = false;
+  playBtn.textContent = '▶ Play';
+  vinyl.classList.remove('playing');
+});
+player.addEventListener('ended', () => {
+  isPlaying = false;
+  playBtn.textContent = '▶ Play';
+  vinyl.classList.remove('playing');
+  updateProgress(); // final update
+});
+
+// update progress UI
+function updateProgress() {
+  const cur = player.currentTime || 0;
+  const dur = player.duration || 1;
+  const pct = (cur/dur) * 100;
+  progressBar.style.width = pct + '%';
+  timeDisplay.textContent = formatTime(cur);
+}
+function formatTime(s){
+  if (!isFinite(s)) return '0:00';
+  const m = Math.floor(s/60);
+  const sec = Math.floor(s%60).toString().padStart(2,'0');
+  return `${m}:${sec}`;
+}
+player.addEventListener('timeupdate', updateProgress);
+player.addEventListener('loadedmetadata', updateProgress);
+
+/* ============================
+   Visualizer (bars) - monochrome
+   ============================ */
+const vizCanvas = document.getElementById('vizCanvas');
+const vizCtx = vizCanvas.getContext('2d');
+
+function visualize(){
+  if (!analyser) return;
+  const WIDTH = vizCanvas.width = vizCanvas.clientWidth * devicePixelRatio;
+  const HEIGHT = vizCanvas.height = vizCanvas.clientHeight * devicePixelRatio;
+  const bufferLength = analyser.frequencyBinCount;
+  dataArray = new Uint8Array(bufferLength);
+
+  function draw() {
+    rafId = requestAnimationFrame(draw);
+    analyser.getByteFrequencyData(dataArray);
+    vizCtx.clearRect(0,0,WIDTH,HEIGHT);
+
+    // draw bars
+    const barWidth = (WIDTH / bufferLength) * 1.2;
+    let x = 0;
+    for (let i = 0; i < bufferLength; i++){
+      const v = dataArray[i] / 255; // 0..1
+      const barHeight = Math.max(2, v * HEIGHT * 0.9);
+      // gradient / monochrome effect
+      const alpha = 0.2 + (v * 0.95);
+      vizCtx.fillStyle = `rgba(255,255,255,${alpha})`;
+      vizCtx.fillRect(x, HEIGHT - barHeight, Math.floor(barWidth), Math.floor(barHeight));
+      x += barWidth + 2;
+    }
+  }
+  draw();
+}
+
+/* ============================
+   Particles (subtle light specks)
+   ============================ */
+const particleCanvas = document.getElementById('particles');
+const pCtx = particleCanvas.getContext('2d');
+let particles = [];
+function resizeParticles(){
+  particleCanvas.width = innerWidth * devicePixelRatio;
+  particleCanvas.height = innerHeight * devicePixelRatio;
+  pCtx.scale(devicePixelRatio, devicePixelRatio);
+}
+function initParticles(){
+  resizeParticles();
+  particles = [];
+  const count = Math.max(30, Math.floor(window.innerWidth/24));
+  for (let i=0;i<count;i++){
+    particles.push({
+      x: Math.random()*innerWidth,
+      y: Math.random()*innerHeight,
+      r: 0.6 + Math.random()*2.2,
+      vy: 0.02 + Math.random()*0.35,
+      alpha: 0.05 + Math.random()*0.12
+    });
+  }
+}
+function drawParticles(){
+  pCtx.clearRect(0,0,particleCanvas.width, particleCanvas.height);
+  pCtx.save();
+  pCtx.scale(1/devicePixelRatio, 1/devicePixelRatio);
+  for (const p of particles){
+    p.y -= p.vy;
+    if (p.y < -10) p.y = innerHeight + 10;
+    pCtx.beginPath();
+    pCtx.fillStyle = `rgba(255,255,255,${p.alpha})`;
+    pCtx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+    pCtx.fill();
+  }
+  pCtx.restore();
+  requestAnimationFrame(drawParticles);
+}
+window.addEventListener('resize', () => { initParticles(); resizeBgImage(); });
+initParticles();
+drawParticles();
+
+/* ============================
+   Responsive background fit handling
+   ============================ */
+const bgImg = document.getElementById('bgImage');
+const bgFill = document.getElementById('bgFill');
+
+// Ensure the visible 'contain' image is always centered — object-fit does it already.
+// But we optionally scale small images a bit for better composition.
+function resizeBgImage(){
+  // keep it handled by CSS; we could add tiny zoom for narrow aspect ratios if desired
+}
+resizeBgImage();
+
+/* ============================
+   Night Mode (pure blackout)
+   ============================ */
+function toggleNight(){
+  document.body.classList.toggle('night');
+}
+
+/* ============================
+   Start audio context on first user gesture (some browsers block autoplay)
+   ============================ */
+document.body.addEventListener('click', function initOnce(){
+  if (!audioCtx) {
+    try { ensureAudio(); if (audioCtx.state === 'suspended') audioCtx.resume(); } catch(e){}
+  }
+  document.body.removeEventListener('click', initOnce);
+}, {once:true});
+
+/* ============================
+   Helper: start with vinyl paused and nice entrance animation
+   ============================ */
+window.addEventListener('load', () => {
+  // tiny entrance animation
+  document.querySelectorAll('.card').forEach((c,i) => {
+    c.style.opacity = 0; c.style.transform = 'translateY(8px)';
+    setTimeout(()=>{ c.style.transition='opacity .6s ease, transform .6s cubic-bezier(.2,.9,.2,1)'; c.style.opacity=1; c.style.transform='translateY(0)'; }, 220 + i*60);
+  });
+});
+
+/* ============================
+   Clean up on unload / pause RAFs
+   ============================ */
+window.addEventListener('beforeunload', () => {
+  if (rafId) cancelAnimationFrame(rafId);
+});
+</script>
+
+</body>
+</html>
